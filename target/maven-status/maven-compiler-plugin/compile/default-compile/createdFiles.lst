@@ -1,0 +1,15 @@
+dao\DAOgenerico.class
+modelo\GerenciadorDeRefeicoes.class
+dao\DAOPratoJDBC.class
+modelo\Ingrediente.class
+modelo\Prato.class
+modelo\Grupo.class
+dao\DAOPrato.class
+dao\DAORefeicao.class
+modelo\Refeicao.class
+com\mycompany\cardapio\Cardapio.class
+dao\DAOIngrediente.class
+dao\DAOIngredienteJDBC.class
+dao\DAOGrupo.class
+dao\DAOGrupoJDBC.class
+dao\DAORefeicaoJDBC.class
