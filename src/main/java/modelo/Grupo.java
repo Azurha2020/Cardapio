@@ -17,6 +17,11 @@ public class Grupo {
         this.nome = nome;
     }
 
+    @Override
+    public String toString() {
+        return this.nome;
+    }
+
     public Grupo() {
        
     }

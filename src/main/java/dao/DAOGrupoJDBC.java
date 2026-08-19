@@ -26,6 +26,7 @@ public class DAOGrupoJDBC implements DAOGrupo{
             System.out.println(linha+" alterou");
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Erro " + e.getMessage(), e);
         }
         return linha;
     }
@@ -41,6 +42,7 @@ public class DAOGrupoJDBC implements DAOGrupo{
             System.out.println(linha+" alterou");
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Erro " + e.getMessage(), e);
         }
         return linha;
     }
@@ -55,6 +57,7 @@ public class DAOGrupoJDBC implements DAOGrupo{
             linha=DAOgenerico.executarComando(insert, codigo);
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Erro " + e.getMessage(), e);
         }
         return linha;
     }
@@ -80,6 +83,7 @@ public class DAOGrupoJDBC implements DAOGrupo{
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Erro " + e.getMessage(), e);
         }
 
         return grupos;

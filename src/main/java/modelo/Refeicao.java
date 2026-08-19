@@ -4,6 +4,7 @@
  */
 package modelo;
 
+import dao.DAOIngrediente;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,6 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class Refeicao {
 //    tempo limite para preparo da refeição
+
     private int id;
 
     public Refeicao() {
@@ -24,18 +26,19 @@ public class Refeicao {
 //    numero de pratos desejado para refeição
     private int componentes;
 //    pratos selecionados para a refeição
-    private List<Prato> pratos=new ArrayList<>();
+    private List<Prato> pratos = new ArrayList<>();
     private int caloriaMax;
     private int caloriaTtl;
 //    grupos de ingradiente que o usuario pode optar por exigir
     private List<Grupo> grupos;
+    private DAOIngrediente daoing = dao.DAOFactory.criaDAOing();
 
     public Refeicao(int tempoMaximo, int componentes, List<Ingrediente> ingredientesDisponiveis) {
         this.tempoMaximo = tempoMaximo;
         this.componentes = componentes;
     }
 
-    public Refeicao(int tempoMaximo, int componentes,  int caloriaMax) {
+    public Refeicao(int tempoMaximo, int componentes, int caloriaMax) {
         this.tempoMaximo = tempoMaximo;
         this.componentes = componentes;
         this.caloriaMax = caloriaMax;
@@ -48,15 +51,15 @@ public class Refeicao {
         this.grupos = grupos;
     }
 
-    List<Prato> prepararRefeicao(List<Prato> todosPratos,List<Ingrediente> despensa) {
+    public List<Prato> prepararRefeicao(List<Prato> todosPratos, List<Ingrediente> despensa) {
+        this.pratos.clear();
         tempoTtl = 0;
         caloriaTtl = 0;
-        List<Prato>PratosParaSorteio=new ArrayList<>(todosPratos);
+        List<Prato> PratosParaSorteio = new ArrayList<>(todosPratos);
         while (pratos.size() < componentes && !PratosParaSorteio.isEmpty()) {
             int pratosDisponiveis = PratosParaSorteio.size();
             int indice = ThreadLocalRandom.current().nextInt(pratosDisponiveis);
             Prato candidato = PratosParaSorteio.get(indice);
-
             if (!candidato.isPronto()) {
                 boolean dentroDoTempo = (candidato.getTempo() + tempoTtl) <= tempoMaximo;
                 boolean dentroDaCaloria;
@@ -72,23 +75,28 @@ public class Refeicao {
 
                 if (dentroDaCaloria && dentroDoTempo && temIngredientes) {
                     // 1. Deduz os ingredientes da despensa antes de adicionar o prato
-                    subtrairIngredientesDaDespensa(candidato,despensa);
+                    subtrairIngredientesDaDespensa(candidato, despensa);
 
                     // 2. Atualiza os totais da refeição
                     tempoTtl += candidato.getTempo();
                     caloriaTtl += candidato.getCalorias();
+                    System.out.println(this.getCaloriaTtl());
                     // 3. Adiciona o prato
                     pratos.add(candidato);
                 }
             } else {
-                pratos.add(candidato);
+                if (candidato.getCalorias() + this.caloriaTtl <= this.caloriaMax || this.caloriaMax == 0) {
+                    pratos.add(candidato);
+                    tempoTtl += 1;
+                    caloriaTtl += candidato.getCalorias();
+                }
             }
             PratosParaSorteio.remove(indice);
         }
         return pratos;
     }
 
-    private void subtrairIngredientesDaDespensa(Prato prato,List<Ingrediente>despensa) {
+    public void subtrairIngredientesDaDespensa(Prato prato, List<Ingrediente> despensa) {
         for (Ingrediente ingPrato : prato.getIngredientes()) {
             for (Ingrediente ingDespensa : despensa) {
                 if (ingPrato.getId() == ingDespensa.getId()) {
@@ -100,7 +108,7 @@ public class Refeicao {
         }
     }
 
-    public List<Prato> mudarRefeicao(List<Prato> pratosParaSorteio,List<Ingrediente>despensa) {
+    public List<Prato> mudarRefeicao(List<Prato> pratosParaSorteio, List<Ingrediente> despensa) {
         // 1. Reembolsa os ingredientes dos pratos atuais para a despensa
         reembolsarIngredientesParaDespensa(despensa);
 
@@ -108,11 +116,11 @@ public class Refeicao {
         this.pratos.clear();
 
         // 3. Chama novamente o método prepararRefeicao com a lista de opções enviada
-        return prepararRefeicao(pratosParaSorteio,despensa);
+        return prepararRefeicao(pratosParaSorteio, despensa);
     }
 
 // Método auxiliar privado para realizar o reembolso
-    private void reembolsarIngredientesParaDespensa(List<Ingrediente>despensa) {
+    public void reembolsarIngredientesParaDespensa(List<Ingrediente> despensa) {
         if (this.pratos == null || this.pratos.isEmpty()) {
             return;
         }

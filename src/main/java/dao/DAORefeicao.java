@@ -18,4 +18,5 @@ public interface DAORefeicao {
     public int editar(Refeicao refeicao);
     public int apagar(int codigo);
     public List<Refeicao> listar();
+    public Refeicao buscar(int id);
 }

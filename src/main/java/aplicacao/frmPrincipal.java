@@ -4,19 +4,32 @@
  */
 package aplicacao;
 
+import dao.DAOIngrediente;
+import dao.DAORefeicao;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import modelo.Ingrediente;
+import modelo.Refeicao;
+
 /**
  *
  * @author Azurha
  */
 public class frmPrincipal extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(frmPrincipal.class.getName());
+    private DefaultTableModel modeloRef = null;
+    private DefaultTableModel modeloDis = null;
+    private DAORefeicao daoRef = dao.DAOFactory.criaDAOref();
+    private DAOIngrediente daoIng = dao.DAOFactory.criaDAOing();
 
     /**
      * Creates new form frmPrincipal
      */
     public frmPrincipal() {
         initComponents();
+        modeloRef = (DefaultTableModel) tblRef.getModel();
+        modeloDis = (DefaultTableModel) tblDis.getModel();
     }
 
     /**
@@ -29,31 +42,57 @@ public class frmPrincipal extends javax.swing.JFrame {
     private void initComponents() {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jLayeredPane2 = new javax.swing.JLayeredPane();
-        jButton1 = new BotaoRedondo("+");
+        PainelRef = new javax.swing.JLayeredPane();
+        btnsair = new javax.swing.JButton();
+        BotaoNovo = new BotaoRedondo("+");
+        btnApagar = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
-        jLayeredPane3 = new javax.swing.JLayeredPane();
+        tblRef = new javax.swing.JTable();
+        PainelDispensa = new javax.swing.JLayeredPane();
+        btnSair = new javax.swing.JButton();
+        btnApagarIng = new javax.swing.JButton();
+        BotaoNovoIng = new BotaoRedondo("+");
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblDis = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLayeredPane2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        jTabbedPane1.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                jTabbedPane1FocusGained(evt);
+            }
+        });
 
-        jButton1.setBackground(new java.awt.Color(24, 121, 24));
-        jButton1.setFont(new java.awt.Font("sansserif", 1, 36)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jButton1.setText("+");
-        jButton1.setAlignmentY(0.0F);
-        jButton1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton1.setMaximumSize(new java.awt.Dimension(50, 50));
-        jButton1.setMinimumSize(new java.awt.Dimension(50, 50));
-        jButton1.addActionListener(this::jButton1ActionPerformed);
-        jLayeredPane2.setLayer(jButton1, javax.swing.JLayeredPane.MODAL_LAYER);
-        jLayeredPane2.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(800, 470, 40, 40));
+        PainelRef.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                PainelRefFocusGained(evt);
+            }
+        });
+        PainelRef.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        btnsair.setText("Sair");
+        btnsair.addActionListener(this::btnsairActionPerformed);
+        PainelRef.add(btnsair, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 490, -1, -1));
+
+        BotaoNovo.setBackground(new java.awt.Color(24, 121, 24));
+        BotaoNovo.setFont(new java.awt.Font("sansserif", 1, 36)); // NOI18N
+        BotaoNovo.setForeground(new java.awt.Color(255, 255, 255));
+        BotaoNovo.setText("+");
+        BotaoNovo.setAlignmentY(0.0F);
+        BotaoNovo.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        BotaoNovo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        BotaoNovo.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        BotaoNovo.setMaximumSize(new java.awt.Dimension(50, 50));
+        BotaoNovo.setMinimumSize(new java.awt.Dimension(50, 50));
+        BotaoNovo.addActionListener(this::BotaoNovoActionPerformed);
+        PainelRef.setLayer(BotaoNovo, javax.swing.JLayeredPane.MODAL_LAYER);
+        PainelRef.add(BotaoNovo, new org.netbeans.lib.awtextra.AbsoluteConstraints(800, 470, 40, 40));
+
+        btnApagar.setText("Apagar");
+        btnApagar.addActionListener(this::btnApagarActionPerformed);
+        PainelRef.add(btnApagar, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 480, -1, -1));
+
+        tblRef.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -67,29 +106,89 @@ public class frmPrincipal extends javax.swing.JFrame {
             Class[] types = new Class [] {
                 java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
         });
-        jScrollPane2.setViewportView(jTable2);
+        tblRef.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblRefMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tblRef);
 
-        jLayeredPane2.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 884, 510));
+        PainelRef.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(-6, 0, 890, 540));
 
-        jTabbedPane1.addTab("Refeições", jLayeredPane2);
+        jTabbedPane1.addTab("Refeições", PainelRef);
 
-        javax.swing.GroupLayout jLayeredPane3Layout = new javax.swing.GroupLayout(jLayeredPane3);
-        jLayeredPane3.setLayout(jLayeredPane3Layout);
-        jLayeredPane3Layout.setHorizontalGroup(
-            jLayeredPane3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 884, Short.MAX_VALUE)
-        );
-        jLayeredPane3Layout.setVerticalGroup(
-            jLayeredPane3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 530, Short.MAX_VALUE)
-        );
+        PainelDispensa.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jTabbedPane1.addTab("dispensa", jLayeredPane3);
+        btnSair.setText("Sair");
+        btnSair.addActionListener(this::btnSairActionPerformed);
+        PainelDispensa.add(btnSair, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 490, -1, -1));
+
+        btnApagarIng.setText("Apagar");
+        btnApagarIng.addActionListener(this::btnApagarIngActionPerformed);
+        PainelDispensa.add(btnApagarIng, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 480, -1, -1));
+
+        BotaoNovoIng.setBackground(new java.awt.Color(24, 121, 24));
+        BotaoNovoIng.setFont(new java.awt.Font("sansserif", 1, 36)); // NOI18N
+        BotaoNovoIng.setForeground(new java.awt.Color(255, 255, 255));
+        BotaoNovoIng.setText("+");
+        BotaoNovoIng.setAlignmentY(0.0F);
+        BotaoNovoIng.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        BotaoNovoIng.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        BotaoNovoIng.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        BotaoNovoIng.setMaximumSize(new java.awt.Dimension(50, 50));
+        BotaoNovoIng.setMinimumSize(new java.awt.Dimension(50, 50));
+        BotaoNovoIng.addActionListener(this::BotaoNovoIngActionPerformed);
+        PainelDispensa.setLayer(BotaoNovoIng, javax.swing.JLayeredPane.MODAL_LAYER);
+        PainelDispensa.add(BotaoNovoIng, new org.netbeans.lib.awtextra.AbsoluteConstraints(800, 470, 40, 40));
+
+        tblDis.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "id", "nome", "grupo", "Quantidade"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblDis.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblDisMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tblDis);
+
+        PainelDispensa.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 880, 540));
+
+        jTabbedPane1.addTab("dispensa", PainelDispensa);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -105,9 +204,128 @@ public class frmPrincipal extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void BotaoNovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BotaoNovoActionPerformed
+        new frmNovaRefeicao().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_BotaoNovoActionPerformed
+
+    private void PainelRefFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_PainelRefFocusGained
+    }//GEN-LAST:event_PainelRefFocusGained
+
+    private void jTabbedPane1FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jTabbedPane1FocusGained
+        PreencherTabelaRef();
+        PreencherTabelaDis();
+    }//GEN-LAST:event_jTabbedPane1FocusGained
+
+    private void tblRefMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblRefMouseClicked
+        if (evt.getClickCount() > 1) {
+            int linha = tblRef.getSelectedRow();
+            int id = Integer.parseInt(modeloRef.getValueAt(linha, 0).toString());
+            Refeicao refeicao = daoRef.buscar(id);
+            new frmNovaRefeicao(refeicao).setVisible(true);
+            this.dispose();
+
+        }
+    }//GEN-LAST:event_tblRefMouseClicked
+
+    private void btnApagarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApagarActionPerformed
+        int linha = tblRef.getSelectedRow();
+        if (linha >= 0) {
+            int id = (int) modeloRef.getValueAt(linha, 0);
+            daoRef.apagar(id);
+            PreencherTabelaRef();
+        } else {
+            JOptionPane.showMessageDialog(this, "Linha invalida");
+        }
+    }//GEN-LAST:event_btnApagarActionPerformed
+
+    private void BotaoNovoIngActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BotaoNovoIngActionPerformed
+        new frmNovoIngrediente().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_BotaoNovoIngActionPerformed
+
+    private void btnApagarIngActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApagarIngActionPerformed
+       int linha = tblDis.getSelectedRow();
+        if (linha >= 0) {
+            int id = (int) modeloDis.getValueAt(linha, 0);
+            daoIng.apagar(id);
+            PreencherTabelaDis();
+        } else {
+            JOptionPane.showMessageDialog(this, "Linha invalida");
+        }
+              
+    }//GEN-LAST:event_btnApagarIngActionPerformed
+
+    private void tblDisMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblDisMouseClicked
+        if (evt.getClickCount() > 1) {
+            int linha = tblDis.getSelectedRow();
+            int id = Integer.parseInt(modeloDis.getValueAt(linha, 0).toString());
+            Ingrediente ingrediente = daoIng.buscar(id);
+            new frmNovoIngrediente(ingrediente).setVisible(true);
+            this.dispose();
+
+        }
+    }//GEN-LAST:event_tblDisMouseClicked
+
+    private void btnSairActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSairActionPerformed
+        int opcao = JOptionPane.showConfirmDialog(
+        this, 
+        "Deseja realmente parar a execução?", 
+        "Confirmação", 
+        JOptionPane.YES_NO_OPTION, 
+        JOptionPane.QUESTION_MESSAGE
+    );
+
+    if (opcao == JOptionPane.YES_OPTION) {
+        System.exit(0);
+    }
+    }//GEN-LAST:event_btnSairActionPerformed
+
+    private void btnsairActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsairActionPerformed
+                int opcao = JOptionPane.showConfirmDialog(
+        this, 
+        "Deseja realmente parar a execução?", 
+        "Confirmação", 
+        JOptionPane.YES_NO_OPTION, 
+        JOptionPane.QUESTION_MESSAGE
+    );
+
+    if (opcao == JOptionPane.YES_OPTION) {
+        System.exit(0);
+    }
+    }//GEN-LAST:event_btnsairActionPerformed
+    private void PreencherTabelaRef() {
+        modeloRef.getDataVector().clear();
+        try {
+            for (Refeicao refeicao : daoRef.listar()) {
+                modeloRef.addRow(new Object[]{refeicao.getId(),
+                    refeicao.getComponentes(),
+                    refeicao.getTempoTtl(),
+                    refeicao.getCaloriaTtl()
+
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void PreencherTabelaDis() {
+        modeloDis.getDataVector().clear();
+        try {
+            for (Ingrediente ingrediente : daoIng.listar()) {
+                modeloDis.addRow(new Object[]{
+                    ingrediente.getId(),
+                    ingrediente.getNome(),
+                    ingrediente.getGrupo().getNome(),
+                    ingrediente.getQuantidade()
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Erro " + e.getMessage(), e);
+        }
+    }
 
     /**
      * @param args the command line arguments
@@ -134,12 +352,20 @@ public class frmPrincipal extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(() -> new frmPrincipal().setVisible(true));
     }
 
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLayeredPane jLayeredPane2;
-    private javax.swing.JLayeredPane jLayeredPane3;
+    private javax.swing.JButton BotaoNovo;
+    private javax.swing.JButton BotaoNovoIng;
+    private javax.swing.JLayeredPane PainelDispensa;
+    private javax.swing.JLayeredPane PainelRef;
+    private javax.swing.JButton btnApagar;
+    private javax.swing.JButton btnApagarIng;
+    private javax.swing.JButton btnSair;
+    private javax.swing.JButton btnsair;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTable jTable2;
+    private javax.swing.JTable tblDis;
+    private javax.swing.JTable tblRef;
     // End of variables declaration//GEN-END:variables
 }
